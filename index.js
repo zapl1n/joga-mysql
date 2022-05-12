@@ -1,34 +1,35 @@
-// application packages
-const express = require('express')
-const app = express()
+// import database connection
+const con = require('../utils/db')
 
-const path = require('path')
-// add template engine
-const hbs = require('express-handlebars');
-// setup template engine directory and files extensions
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
-app.engine('hbs', hbs.engine({
-    extname: 'hbs',
-    defaultLayout: 'main',
-    layoutsDir: __dirname + '/views/layouts/',
-}))
+// show all articles - index page
+const getAllArticles=(req, res) => {
+    let query = "SELECT * FROM article";
+    let articles = []
+    con.query(query, (err, result) => {
+        if (err) throw err;
+        articles = result
+        res.render('index', {
+            articles: articles
+        })
+    })
+};
 
-// setup static public directory
-app.use(express.static('public'));
+//show article by this slug
+const getArticleBySlug=(req, res) => {
+    // let query = `SELECT * FROM article where slug = "${req.params.slug}"`
+    let query = `select article.id, article.name, article.slug, article.image, article.body, article.published, author.name as author, author.id as author_id from article JOIN author ON article.author_id = author.id where slug = "${req.params.slug}";`
+    let article
+    con.query(query, (err, result) => {
+        if (err) throw err
+        article = result
+        res.render('article', {
+            article: article
+        })
+    })
+};
 
-const bodyParser = require('body-parser')
-app.use(bodyParser.urlencoded({extended: true}))
-
-
-// import article route
-const articleRoutes = require('./routes/article')
-// to use article routes
-app.use('/', articleRoutes)
-app.use('/article', articleRoutes)
-app.use('/author', articleRoutes)
-
-// app start point
-app.listen(3000, () => {
-    console.log('App is started at http://localhost:3000');
-});
+// export controller functions
+module.exports = {
+    getAllArticles,
+    getArticleBySlug
+};
