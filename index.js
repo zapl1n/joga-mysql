@@ -1,5 +1,5 @@
 // import database connection
-const con = require('../utils/db')
+const con = require('./utils/db')
 
 // show all articles - index page
 const getAllArticles=(req, res) => {
